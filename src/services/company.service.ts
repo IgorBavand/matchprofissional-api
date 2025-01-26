@@ -1,38 +1,36 @@
 import {Request, Response} from 'express';
-import {UserDTO} from '../dto/user.dto';
-import {UserRepository} from '../repositories/user.repository';
 import {HttpStatus} from '../enums/http-status.enum';
-import {v4 as uuidv4} from 'uuid';
 import bcrypt from 'bcrypt';
-import {User} from "../entities/user.entity";
 import jwt from "jsonwebtoken";
 import {TokenPayload} from "../dto/token.dto";
+import {CompanyRepository} from "../repositories/company.repository";
+import {Company} from "../entities/company.entity";
 
-export class UserService {
-    public constructor(readonly userRepository: UserRepository) {
+export class CompanyService {
+    public constructor(readonly companyRepository: CompanyRepository) {
     }
 
     async login(req: Request, res: Response) {
         try {
             const {email, password} = req.body;
-            const user = await this.userRepository.findByEmail(email);
+            const company = await this.companyRepository.findByEmail(email);
 
-            if (!user) {
-                return res.status(HttpStatus.UNAUTHORIZED).json({message: 'User not found'});
+            if (!company) {
+                return res.status(HttpStatus.UNAUTHORIZED).json({message: 'Company not found'});
             }
 
-            const isPasswordValid = await bcrypt.compare(password, user.password);
+            const isPasswordValid = await bcrypt.compare(password, company.password);
             if (!isPasswordValid) {
                 return res.status(HttpStatus.UNAUTHORIZED).json({message: 'Invalid credentials'});
             }
 
-            const accessToken = this.generateAccessToken(user);
-            const refreshToken = this.generateRefreshToken(user);
+            const accessToken = this.generateAccessToken(company);
+            const refreshToken = this.generateRefreshToken(company);
 
-            const {password: _, ...userWithoutPassword} = user;
+            const {password: _, ...companyWithoutPassword} = company;
 
             return res.json({
-                user: userWithoutPassword,
+                company: companyWithoutPassword,
                 accessToken,
                 refreshToken
             });
@@ -41,49 +39,49 @@ export class UserService {
         }
     }
 
-    private generateAccessToken(user: User): string {
+    private generateAccessToken(company: Company): string {
         return jwt.sign(
-            {id: user.id, email: user.email},
+            {id: company.id, email: company.email},
             process.env.ACCESS_TOKEN_SECRET || 'default_access_secret',
             {expiresIn: '15m'}
         );
     }
 
-    private generateRefreshToken(user: User): string {
+    private generateRefreshToken(company: Company): string {
         return jwt.sign(
-            {id: user.id, email: user.email},
+            {id: company.id, email: company.email},
             process.env.REFRESH_TOKEN_SECRET || 'default_refresh_secret',
             {expiresIn: '7d'}
         );
     }
 
-    public async createUser(req: Request, res: Response) {
+    public async createCompany(req: Request, res: Response) {
         try {
-            const {name, email, password, curriculum, skills} = req.body;
-            const userExists = await this.userRepository.findByEmail(email);
-            if (userExists) {
+            const {name, cnpj, email, password, businessArea} = req.body;
+
+            const companyExists = await this.companyRepository.findByEmail(email);
+            if (companyExists) {
                 return res
                     .status(HttpStatus.CONFLICT)
-                    .json({message: 'User already exists'});
+                    .json({message: 'Company with this email already exists'});
             }
 
-            const user: UserDTO = {
-                id: uuidv4(),
-                name,
-                email,
-                password,
-                curriculum,
-                skills,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            const passwordHash = await bcrypt.hash(user.password, 10);
-            user.password = passwordHash;
+            const passwordHash = await bcrypt.hash(password, 10);
 
-            const newUser = await this.userRepository.save(user);
+            const company = new Company();
+            company.name = name;
+            company.cnpj = cnpj;
+            company.email = email;
+            company.password = passwordHash;
+            company.businessArea = businessArea;
+            company.jobs = [];
+            company.createdAt = new Date();
+            company.updatedAt = new Date();
 
-            const {password: _, ...userWithoutPassword} = newUser;
-            return res.status(HttpStatus.CREATED).json(userWithoutPassword);
+            const newCompany = await this.companyRepository.save(company);
+
+            const {password: _, ...companyWithoutPassword} = newCompany;
+            return res.status(HttpStatus.CREATED).json(companyWithoutPassword);
         } catch (error: any) {
             return res
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -105,13 +103,13 @@ export class UserService {
                     process.env.REFRESH_TOKEN_SECRET || 'default_refresh_secret'
                 ) as TokenPayload;
 
-                const user = await this.userRepository.findById(payload.id);
+                const company = await this.companyRepository.findById(payload.id);
 
-                if (!user) {
-                    return res.status(HttpStatus.UNAUTHORIZED).json({message: 'User not found'});
+                if (!company) {
+                    return res.status(HttpStatus.UNAUTHORIZED).json({message: 'Company not found'});
                 }
 
-                const newAccessToken = this.generateAccessToken(user);
+                const newAccessToken = this.generateAccessToken(company);
 
                 return res.json({accessToken: newAccessToken});
             } catch (error) {

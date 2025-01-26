@@ -1,7 +1,6 @@
-import { AppDataSource } from '../config/database.config';
-import { User } from '../entities/user.entity';
-import { BaseRepository } from './base.repository';
-import { type Repository, In } from 'typeorm';
+import {User} from '../entities/user.entity';
+import {BaseRepository} from './base.repository';
+import {In, type Repository} from 'typeorm';
 
 export class UserRepository extends BaseRepository<User> {
     public constructor(repository: Repository<User>) {
