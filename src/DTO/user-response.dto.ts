@@ -1,8 +1,7 @@
-export type UserDTO = {
+export type UserResponse = {
     id: string;
     name: string;
     email: string;
-    password: string ;
     curriculum: string;
     skills: string[];
     createdAt: Date;
