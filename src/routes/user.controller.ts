@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { UserService } from '../services/user.service';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 export class UserController {
     public router: Router;
@@ -10,7 +11,7 @@ export class UserController {
     }
 
     public routes() {
-        this.router.post('/', this.createUser.bind(this));
+        this.router.post('/',authMiddleware, this.createUser.bind(this));
         this.router.post('/login', this.login.bind(this));
         this.router.post('/refresh-token', this.refreshToken.bind(this));
     }
