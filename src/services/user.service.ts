@@ -59,15 +59,18 @@ export class UserService {
 
     public async createUser(req: Request, res: Response) {
         try {
-            const {name, email, password, curriculum, skills} = req.body;
+            const { name, email, password, curriculum, skills } = req.body;
+
+            // Verificar se o usuário já existe
             const userExists = await this.userRepository.findByEmail(email);
             if (userExists) {
                 return res
                     .status(HttpStatus.CONFLICT)
-                    .json({message: 'User already exists'});
+                    .json({ message: 'User already exists' });
             }
 
-            const user: UserDTO = {
+            // Criando o objeto UserDTO (para validação)
+            const userDTO: UserDTO = {
                 id: uuidv4(),
                 name,
                 email,
@@ -76,20 +79,39 @@ export class UserService {
                 skills,
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                applications: [] // Inicializando applications como um array vazio
             };
-            const passwordHash = await bcrypt.hash(user.password, 10);
-            user.password = passwordHash;
 
+            // Criptografando a senha
+            const passwordHash = await bcrypt.hash(userDTO.password, 10);
+            userDTO.password = passwordHash;
+
+            // Criando o objeto User a partir do UserDTO
+            const user: User = new User();
+            user.id = userDTO.id;
+            user.name = userDTO.name;
+            user.email = userDTO.email;
+            user.password = userDTO.password;
+            user.curriculum = userDTO.curriculum;
+            user.skills = userDTO.skills;
+            user.createdAt = userDTO.createdAt;
+            user.updatedAt = userDTO.updatedAt;
+            user.applications = userDTO.applications || []; // Garantindo que applications seja um array vazio
+
+            // Salvando o novo usuário
             const newUser = await this.userRepository.save(user);
 
-            const {password: _, ...userWithoutPassword} = newUser;
+            // Remover a senha do retorno
+            const { password: _, ...userWithoutPassword } = newUser;
             return res.status(HttpStatus.CREATED).json(userWithoutPassword);
+
         } catch (error: any) {
             return res
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .json({message: error.message});
+                .json({ message: error.message });
         }
     }
+
 
     async refreshToken(req: Request, res: Response) {
         try {
