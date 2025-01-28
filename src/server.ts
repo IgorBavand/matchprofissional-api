@@ -9,6 +9,10 @@ import { CompanyService } from './services/company.service';
 import { CompanyRepository } from './repositories/company.repository';
 import { Company } from './entities/company.entity';
 import { errorHandler } from './middlewares/error-handler.middleware';
+import {JobRepository} from "./repositories/job.repository";
+import {Job} from "./entities/job.entity";
+import {JobService} from "./services/job.service";
+import {JobController} from "./routes/job.controller";
 
 AppDataSource.initialize().then(() => {
     const app = express();
@@ -25,10 +29,18 @@ AppDataSource.initialize().then(() => {
     const companyService = new CompanyService(companyRepository);
     const companyController = new CompanyController(companyService);
 
+    const jobRepository = new JobRepository(
+        AppDataSource.getRepository(Job)
+    );
+    const jobService = new JobService(jobRepository);
+    const jobController = new JobController(jobService);
+
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use('/users', userController.router);
     app.use('/companies', companyController.router);
+    app.use('/jobs', jobController.router);
+
     app.use(errorHandler);
 
     app.listen(process.env.PORT, () => {
