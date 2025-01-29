@@ -33,7 +33,7 @@ AppDataSource.initialize().then(() => {
         AppDataSource.getRepository(Job)
     );
     const jobService = new JobService(jobRepository);
-    const jobController = new JobController(jobService);
+    const jobController = new JobController(jobService, companyService);
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));

@@ -5,6 +5,8 @@ import { JobRepository } from '../repositories/job.repository';
 import { Job } from "../entities/job.entity";
 import { JobDto } from "../dto/job.dto";
 import { Company } from "../entities/company.entity";
+import {Seniority} from "../enums/seniority.enum";
+import {contractType} from "../enums/contract-type.enum";
 
 export class JobService {
     public constructor(private readonly jobRepository: JobRepository) {}
@@ -45,7 +47,9 @@ export class JobService {
                 seniority: savedJob.seniority,
                 isActive: savedJob.isActive,
                 company: savedJob.company,
-                applications: savedJob.applications
+                applications: savedJob.applications,
+                createdAt: new Date(),
+                updatedAt: new Date(),
             };
 
             return res.status(HttpStatus.CREATED).json(newJob);
@@ -53,6 +57,36 @@ export class JobService {
             return res
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .json({ message: error.message });
+        }
+    }
+
+    async getAllJobs(req: Request, res: Response) {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+
+            const filters = {
+                companyId: req.query.companyId as string | undefined,
+                contractType: req.query.contractType as contractType | undefined,
+                seniority: req.query.seniority as Seniority | undefined,
+                minSalary: req.query.minSalary ? parseFloat(req.query.minSalary as string) : undefined,
+                maxSalary: req.query.maxSalary ? parseFloat(req.query.maxSalary as string) : undefined,
+                isActive: req.query.isActive ? req.query.isActive === 'true' : undefined,
+            };
+
+            const [jobs, total] = await this.jobRepository.findJobs(page, limit, filters);
+
+            return res.json({
+                jobs,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit),
+                },
+            });
+        } catch (error: any) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: error.message});
         }
     }
 }
