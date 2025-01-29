@@ -1,5 +1,5 @@
 import {BaseRepository} from './base.repository';
-import {type Repository} from 'typeorm';
+import {Repository} from 'typeorm';
 import {Company} from "../entities/company.entity";
 
 export class CompanyRepository extends BaseRepository<Company> {
@@ -7,10 +7,12 @@ export class CompanyRepository extends BaseRepository<Company> {
         super(repository);
     }
 
-    public async findByEmail(email: string): Promise<Company | null> {
-        return await this.repository.findOne({ where: { email } });
+    public findByEmail(email: string): Promise<Company | null> {
+        return this.repository.findOne({ where: { email } });
     }
-    public async findById(id: string): Promise<Company | null> {
-        return await this.repository.findOne({ where: { id } });
+
+    public findById(id: string): Promise<Company | null> {
+        return this.repository.findOne({ where: { id } });
     }
+
 }

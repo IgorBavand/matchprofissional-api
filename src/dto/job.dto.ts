@@ -14,4 +14,6 @@ export interface JobDto {
     isActive: boolean;
     company: Company;
     applications: Application[];
+    createdAt: Date;
+    updatedAt: Date;
 }

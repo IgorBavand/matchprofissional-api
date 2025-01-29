@@ -132,4 +132,9 @@ export class CompanyService {
             throw new Error('Invalid token');
         }
     }
+
+    async exists(id: string): Promise<boolean> {
+        const company = await this.companyRepository.findById(id);
+        return !!company;
+    }
 }
