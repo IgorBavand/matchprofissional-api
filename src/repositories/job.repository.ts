@@ -2,7 +2,6 @@ import {Job} from '../entities/job.entity';
 import {Seniority} from '../enums/seniority.enum';
 import {BaseRepository} from './base.repository';
 import {type Repository} from 'typeorm';
-import {contractType} from "../enums/contract-type.enum";
 
 export class JobRepository extends BaseRepository<Job> {
     public constructor(repository: Repository<Job>) {
@@ -25,12 +24,13 @@ export class JobRepository extends BaseRepository<Job> {
         page: number,
         limit: number,
         filters?: {
-            companyId?: string,
-            contractType?: contractType;
-            seniority?: Seniority;
-            minSalary?: number;
-            maxSalary?: number;
-            isActive?: boolean;
+            companyId?: string;
+            companyName?: string,
+            contractType?: string,
+            seniority?: string,
+            minSalary?: number,
+            maxSalary?: number,
+            isActive?: boolean,
         }
     ): Promise<[Job[], number]> {
 
@@ -40,6 +40,9 @@ export class JobRepository extends BaseRepository<Job> {
             .leftJoinAndSelect("job.applications", "applications");
 
         if (filters) {
+            if (filters.companyName) {
+                query.andWhere("company.name LIKE :companyName", { companyName: `%${filters.companyName}%` });
+            }
             if (filters.companyId) {
                 query.andWhere("job.company.id = :companyId", { companyId: filters.companyId });
             }

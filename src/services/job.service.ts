@@ -67,6 +67,7 @@ export class JobService {
 
             const filters = {
                 companyId: req.query.companyId as string | undefined,
+                companyName: req.query.companyName as string,
                 contractType: req.query.contractType as contractType | undefined,
                 seniority: req.query.seniority as Seniority | undefined,
                 minSalary: req.query.minSalary ? parseFloat(req.query.minSalary as string) : undefined,
