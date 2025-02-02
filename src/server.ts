@@ -1,22 +1,22 @@
 import express from "express";
 import cors from "cors";
-import {AppDataSource} from "./config/database.config";
-import {UserController} from "./routes/user.controller";
-import {UserRepository} from "./repositories/user.repository";
-import {UserService} from "./services/user.service";
-import {User} from "./entities/user.entity";
-import {CompanyController} from "./routes/company.controller";
-import {CompanyService} from "./services/company.service";
-import {CompanyRepository} from "./repositories/company.repository";
-import {Company} from "./entities/company.entity";
-import {errorHandler} from "./middlewares/error-handler.middleware";
-import {JobRepository} from "./repositories/job.repository";
-import {Job} from "./entities/job.entity";
-import {JobService} from "./services/job.service";
-import {JobController} from "./routes/job.controller";
 import dotenv from "dotenv";
-import {ApplicationRepository} from "./repositories/application.repository";
-import {Application} from "./entities/application.entity";
+import { AppDataSource } from "./config/database.config";
+import { UserController } from "./routes/user.controller";
+import { UserRepository } from "./repositories/user.repository";
+import { UserService } from "./services/user.service";
+import { User } from "./entities/user.entity";
+import { CompanyController } from "./routes/company.controller";
+import { CompanyService } from "./services/company.service";
+import { CompanyRepository } from "./repositories/company.repository";
+import { Company } from "./entities/company.entity";
+import { JobRepository } from "./repositories/job.repository";
+import { Job } from "./entities/job.entity";
+import { JobService } from "./services/job.service";
+import { JobController } from "./routes/job.controller";
+import { ApplicationRepository } from "./repositories/application.repository";
+import { Application } from "./entities/application.entity";
+import { errorHandler } from "./middlewares/error-handler.middleware";
 
 dotenv.config();
 
@@ -24,19 +24,15 @@ AppDataSource.initialize()
     .then(() => {
         const app = express();
 
-        const corsOptions = {
-            origin: ["http://localhost:4200", "https://matchprofissional.com.br"],
+        app.use(cors({
+            origin: "*",
             methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             allowedHeaders: ["Content-Type", "Authorization"],
             credentials: true,
-        };
-
-        app.use(cors(corsOptions));
-
-        app.options("*", cors(corsOptions));
+        }));
 
         app.use(express.json());
-        app.use(express.urlencoded({extended: true}));
+        app.use(express.urlencoded({ extended: true }));
 
         const userRepository = new UserRepository(AppDataSource.getRepository(User));
         const userService = new UserService(userRepository);
@@ -59,7 +55,6 @@ AppDataSource.initialize()
         app.use(errorHandler);
 
         const PORT = process.env.PORT || 3000;
-
         app.listen(PORT, () => {
             console.log(`✅ Server is running on http://localhost:${PORT}`);
         });
