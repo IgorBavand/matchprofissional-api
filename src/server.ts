@@ -24,7 +24,7 @@ AppDataSource.initialize()
     .then(() => {
         const app = express();
 
-        const allowedOrigins = ["http://localhost:4200", "https://matchprofissional.com.br", "https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--4200--d20a0a75.local-credentialless.webcontainer-api.io"];
+        const allowedOrigins = ["http://localhost:4200", "https://matchprofissional.com.br", "https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--4200--d20a0a75.local-credentialless.webcontainer-api.io", "https://match-profissional-portal.vercel.app"];
         app.use(cors({
             origin: function (origin, callback) {
                 if (!origin || allowedOrigins.includes(origin)) {
