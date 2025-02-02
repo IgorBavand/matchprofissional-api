@@ -15,10 +15,15 @@ export class JobController {
     public routes() {
         this.router.post('/', authCompanyMiddleware(this.companyService), this.createJob.bind(this));
         this.router.get('/', this.getAllJobs.bind(this));
+        this.router.post('/:jobId/apply', authMiddleware, this.applyToJob.bind(this));
     }
 
     private async createJob(req: Request, res: Response) {
         await this.jobService.createJob(req, res);
+    }
+
+    private async applyToJob(req: Request, res: Response) {
+        await this.jobService.applyToJob(req, res);
     }
 
     async getAllJobs(req: Request, res: Response) {
