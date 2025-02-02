@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import {TokenPayload} from "../dto/token.dto";
 import {CompanyRepository} from "../repositories/company.repository";
 import {Company} from "../entities/company.entity";
+import {CompanyDto} from "../dto/company.dto";
 
 export class CompanyService {
     public constructor(readonly companyRepository: CompanyRepository) {
@@ -131,6 +132,10 @@ export class CompanyService {
         } catch (error) {
             throw new Error('Invalid token');
         }
+    }
+
+    async getById(id: string): Promise<Company | null> {
+        return await this.companyRepository.findById(id);
     }
 
     async exists(id: string): Promise<boolean> {

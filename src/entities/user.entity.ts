@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 import { Application } from './application.entity';
+import {UserDTO} from "../dto/user.dto";
 
 @Entity('users')
 export class User {
@@ -41,4 +42,18 @@ export class User {
 
     @OneToMany(() => Application, (application) => application.user)
     applications: Application[];
+
+    static fromDTO(dto: UserDTO): User {
+        const user = new User();
+        user.id = dto.id;
+        user.name = dto.name;
+        user.email = dto.email;
+        user.password = dto.password;
+        user.curriculum = dto.curriculum;
+        user.skills = dto.skills;
+        user.createdAt = dto.createdAt;
+        user.updatedAt = dto.updatedAt;
+        user.applications = dto.applications ?? [];
+        return user;
+    }
 }

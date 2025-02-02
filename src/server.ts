@@ -15,6 +15,8 @@ import {Job} from "./entities/job.entity";
 import {JobService} from "./services/job.service";
 import {JobController} from "./routes/job.controller";
 import dotenv from "dotenv";
+import {ApplicationRepository} from "./repositories/application.repository";
+import {Application} from "./entities/application.entity";
 
 dotenv.config();
 
@@ -44,8 +46,10 @@ AppDataSource.initialize()
         const companyService = new CompanyService(companyRepository);
         const companyController = new CompanyController(companyService);
 
+        const applicationRepository = new ApplicationRepository(AppDataSource.getRepository(Application));
+
         const jobRepository = new JobRepository(AppDataSource.getRepository(Job));
-        const jobService = new JobService(jobRepository);
+        const jobService = new JobService(jobRepository, applicationRepository);
         const jobController = new JobController(jobService, companyService);
 
         app.use("/users", userController.router);

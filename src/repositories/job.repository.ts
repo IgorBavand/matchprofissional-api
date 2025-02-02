@@ -19,6 +19,9 @@ export class JobRepository extends BaseRepository<Job> {
     public async findBySeniority(seniority: Seniority): Promise<Job | null> {
         return await this.repository.findOne({ where: { seniority } });
     }
+    public async findById(id: string): Promise<Job | null> {
+        return await this.repository.findOne({ where: { id } });
+    }
 
     async findJobs(
         page: number,

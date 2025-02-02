@@ -15,7 +15,7 @@ export class Application {
     user: User;
 
     @ManyToOne(() => Job, job => job.applications)
-    job: Job;
+    job: Job | null;
 
     @CreateDateColumn()
     createdAt: Date;

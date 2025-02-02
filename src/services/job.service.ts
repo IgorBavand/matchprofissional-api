@@ -1,15 +1,20 @@
-import { Request, Response } from 'express';
-import { HttpStatus } from '../enums/http-status.enum';
-import { v4 as uuidv4 } from 'uuid';
-import { JobRepository } from '../repositories/job.repository';
-import { Job } from "../entities/job.entity";
-import { JobDto } from "../dto/job.dto";
-import { Company } from "../entities/company.entity";
+import {Request, Response} from 'express';
+import {HttpStatus} from '../enums/http-status.enum';
+import {v4 as uuidv4} from 'uuid';
+import {JobRepository} from '../repositories/job.repository';
+import {Job} from "../entities/job.entity";
+import {JobDto} from "../dto/job.dto";
+import {Company} from "../entities/company.entity";
 import {Seniority} from "../enums/seniority.enum";
 import {contractType} from "../enums/contract-type.enum";
+import {AuthenticatedRequest} from "../dto/authenticated-request.dto";
+import {CompanyService} from "./company.service";
+import {Application} from "../entities/application.entity";
+import {User} from "../entities/user.entity";
+import {ApplicationRepository} from "../repositories/application.repository";
 
 export class JobService {
-    public constructor(private readonly jobRepository: JobRepository) {}
+    public constructor(private readonly jobRepository: JobRepository, private readonly applicationRepository: ApplicationRepository) {}
 
     public async createJob(req: Request, res: Response): Promise<Response> {
         try {
@@ -58,6 +63,44 @@ export class JobService {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .json({ message: error.message });
         }
+    }
+
+    async applyToJob(req: AuthenticatedRequest, res: Response) {
+        try {
+            if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
+                return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Usuário não autenticado." });
+            }
+
+            const { jobId } = req.params;
+            const job = await this.getById(jobId);
+
+            if (!job) {
+                return res.status(HttpStatus.NOT_FOUND).json({ message: "Vaga não encontrada." });
+            }
+
+            job.applications = job.applications ?? [];
+
+            const user = req.user;
+
+            const application = new Application();
+            application.user = User.fromDTO(user);
+            application.job = job;
+
+            job.applications.push(application);
+
+            await this.applicationRepository.save(application);
+            await this.jobRepository.save(job);
+
+            return res.status(HttpStatus.OK).json({ message: "Aplicação registrada com sucesso." });
+        } catch (error: any) {
+            console.error("Erro ao aplicar para vaga:", error);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
+        }
+    }
+
+
+    async getById(id: string): Promise<Job | null> {
+        return await this.jobRepository.findById(id);
     }
 
     async getAllJobs(req: Request, res: Response) {
